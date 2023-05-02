@@ -5,6 +5,23 @@ import { serverError } from "../errors/serverError";
 import { user } from "../models/user.models";
 
 export class userController {
+    public list (req: Request, res: Response) {
+        try {
+            const database = new userDatabase()
+            const users = database.list()
+
+            const result = users.map((user) => user.toJason())
+
+            return res.status(200).send({
+                ok: false,
+                message: "Users successfully listed",
+                data: result
+            })
+        } catch (error: any) {
+            return serverError.genericError(res, error)
+        }
+    }
+
     public get (req: Request, res: Response) {
         try {
             const { id } = req.params
@@ -16,7 +33,11 @@ export class userController {
                 return requestError.notFoundError(res, "User")
             }
 
-            return res.status
+            return res.status(200).send({
+                ok: true ,
+                message: "User successfully obtained",
+                data: user
+            })
         } catch (error: any) {
             return serverError.genericError(res, error)
         }
@@ -83,7 +104,7 @@ export class userController {
     public update (req: Request, res: Response) {
         try {
             const { id } = req.params
-            const {  username, email, cpf, idade} = req.body
+            const {  username, email, password} = req.body
 
             const database = new userDatabase()
             const user = database.get(id)
@@ -100,13 +121,56 @@ export class userController {
                 user.email = email
             }
 
-            if (cpf) {
-                user.cpf = cpf
+            if (password) {
+                user.password = password
             }
 
-            
+            return res.status(200).send({
+                ok: true, 
+                message: "User successfully updated!"
+            })
         } catch (error: any) {
             return serverError.genericError(res, error)
         }
     }
+
+    public loginValida (req: Request, res: Response) {
+        try {
+            const { email, password } = req.body
+
+            if (!email) {
+                return requestError.fieldNotProvider(res, "Email")
+            }
+
+            if (!password) {
+                return requestError.fieldNotProvider(res, "Password")
+            }
+
+            const database = new userDatabase
+            const user = database.getByEmail(email)
+
+            if (!user) {
+                return res.status(401).send({
+                    ok: false,
+                    message: ""
+                })
+            }
+
+            if (user.password !== password) {
+                return res.status(403).send({
+                    ok: false, 
+                    message: ""
+                })
+            }
+
+            return res.status(200).send({
+                ok: true,
+                message: "",
+                id: user.id
+            })
+        } catch (error: any) {
+            return serverError.genericError(res, error)
+        }
+    }   
+    
 }

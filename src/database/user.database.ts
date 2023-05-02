@@ -2,6 +2,12 @@ import { user } from "../models/user.models";
 import { users } from "./users";
 
 export class userDatabase {
+    public list () {
+        return [
+            ...users
+        ]
+    }
+    
     public get (id: string) {
         return users.find ((user) => user.id === id)
     }
@@ -16,5 +22,9 @@ export class userDatabase {
 
     public delete (index: number) {
         users.splice (index, 1)
+    }
+
+    public getByEmail (email: string) {
+        return users.find ((user) => user.email === email)
     }
 }

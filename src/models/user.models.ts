@@ -8,9 +8,7 @@ export class user {
     constructor (
         private _username: string,
         private _email: string,
-        private _password: string,
-        private _cpf?: number,
-        private _idade?: number,
+        private _password: string
 
     ) {
         this._id = createUuid ()
@@ -37,10 +35,6 @@ export class user {
         return this._password
     }
 
-    public get idade () {
-        return this._idade
-    }
-
     public set username (username: string) {
         this._username = username
     }
@@ -49,8 +43,8 @@ export class user {
         this._email = email
     }
 
-    public set cpf (cpf: number) {
-        this._cpf = cpf
+    public set password (password: string) {
+        this._password = password
     }
 
     public toJason () {
