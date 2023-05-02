@@ -5,10 +5,10 @@ import { serverError } from "../errors/serverError";
 import { user } from "../models/user.models";
 
 export class userController {
-    public list (req: Request, res: Response) {
+    public  list (req: Request, res: Response) {
         try {
             const database = new userDatabase()
-            const users = database.list()
+            const users =  database.list()
 
             const result = users.map((user) => user.toJason())
 
