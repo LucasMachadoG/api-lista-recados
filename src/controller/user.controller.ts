@@ -3,14 +3,27 @@ import { userDatabase } from "../database/user.database";
 import { requestError } from "../errors/request.error";
 import { serverError } from "../errors/serverError";
 import { user } from "../models/user.models";
+import { users } from "../database/users";
 
 export class userController {
     public  list (req: Request, res: Response) {
         try {
-            const database = new userDatabase()
-            const users =  database.list()
+            const { username, email } = req.query
 
-            const result = users.map((user) => user.toJason())
+            const database = new userDatabase()
+            let users =  database.list()
+
+            if (username) {
+                users = users.filter((user) => user.username === username)
+            }
+
+            if (email) {
+                users = users.filter ((user) => user.email === email)
+            }
+
+            const result = users.map((user) => {
+                return user.toJason()
+            })
 
             return res.status(200).send({
                 ok: false,
@@ -36,7 +49,7 @@ export class userController {
             return res.status(200).send({
                 ok: true ,
                 message: "User successfully obtained",
-                data: user
+                data: user.toJason()
             })
         } catch (error: any) {
             return serverError.genericError(res, error)
@@ -59,6 +72,15 @@ export class userController {
                 return requestError.fieldNotProvider(res, "Password")
             }
 
+            const usersEmail = users.find ((conta) => conta.email === email)
+
+            if (usersEmail) {
+                return res.status(400).send({
+                    ok: false,
+                    message: "This email is already registered"
+                })
+            }
+
             const User = new user (username, email, password)
 
             const database = new userDatabase()
@@ -67,7 +89,7 @@ export class userController {
             return res.status(200).send({
                 ok: true, 
                 message: "User successfully created!",
-                data: User
+                data: User.toJason()
             })
 
         } catch (error: any) {
@@ -127,7 +149,8 @@ export class userController {
 
             return res.status(200).send({
                 ok: true, 
-                message: "User successfully updated!"
+                message: "User successfully updated!",
+                data: user.toJason()
             })
         } catch (error: any) {
             return serverError.genericError(res, error)
@@ -152,20 +175,20 @@ export class userController {
             if (!user) {
                 return res.status(401).send({
                     ok: false,
-                    message: ""
+                    message: "Verify without email and password"
                 })
             }
 
             if (user.password !== password) {
                 return res.status(403).send({
                     ok: false, 
-                    message: ""
+                    message: "Verify without email and password"
                 })
             }
 
             return res.status(200).send({
                 ok: true,
-                message: "",
+                message: "Login successful",
                 id: user.id
             })
         } catch (error: any) {

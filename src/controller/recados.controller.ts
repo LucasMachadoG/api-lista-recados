@@ -5,17 +5,84 @@ import { requestError } from "../errors/request.error";
 import { Recados } from "../models/recados.model";
 
 export class recadosController {
+    public list (req: Request, res: Response) {
+        try {
+            const { id } = req.params
+            // const { nome, arquivada } = req.query
+
+            const database = new userDatabase()
+            let user = database.get(id)
+            console.log (user?.recados)
+            // let recadosArquivados = arquivada === 'true'
+
+            if (!user) {
+                return requestError.notFoundError(res, "User")
+            }
+
+            // let recados = user.recados
+
+            // if (nome) {
+            //     console.log (recados)
+            //     recados = recados.filter ((recado) => {
+            //         return recado.nome === nome
+            //     })
+
+            //     const result = recados.map ((recado) => {
+            //         return recado.toJson()
+            //     })
+                
+            //     console.log (recados)
+
+            //     return res.status(200).send({
+            //         ok: true,
+            //         message: "Recado!",
+            //         data: result
+            //     })
+            // }
+
+            // if (arquivada) {
+            //     recados = recados.filter ((recado) => {
+            //         return recado.arquivada === recadosArquivados
+            //     })
+
+            //     const result = recados.map ((recado) => {
+            //         return recado.toJson()
+            //     })
+
+            //     return res.status(200).send({
+            //         ok: true,
+            //         message: "Recado!",
+            //         data: result
+            //     })
+            // }
+
+            const result = user.recados.map ((user) => user.toJson())
+
+            return res.status(200).send({
+                ok: true,
+                message: "Recados successfully obtained",
+                data: result
+            })
+        } catch (error: any) {
+            return serverError.genericError(res, error)
+        }
+    }
+
     public createRecado (req: Request, res: Response) {
         try {
             const { id } = req.params
-            const { descricao, conteudo } = req.body
+            const { nome, descricao, conteudo } = req.body
+
+            if (!nome) {
+                return requestError.fieldNotProvider(res, "Nome ")
+            }
 
             if (!descricao) {
-                return requestError.fieldNotProvider(res, "Descriacao")
+                return requestError.fieldNotProvider(res, "Descriacao ")
             }
 
             if (!conteudo) {
-                return requestError.fieldNotProvider(res, "Conteudo")
+                return requestError.fieldNotProvider(res, "Conteudo ")
             }
 
             const database = new userDatabase()
@@ -25,7 +92,7 @@ export class recadosController {
                 return requestError.notFoundError(res, "User")
             }
 
-            user.recados.push(new Recados(descricao, conteudo))
+            user.recados.push(new Recados(nome, descricao, conteudo))
 
             return res.status(400).send({
                 ok: true, 
@@ -67,7 +134,7 @@ export class recadosController {
     public update (req: Request, res: Response) {
         try {
             const { userId, id } = req.params
-            const { descricao, conteudo } = req.body
+            const { nome, descricao, conteudo, arquivada } = req.body
 
             const database = new userDatabase()
             const user = database.get(userId)
@@ -82,6 +149,10 @@ export class recadosController {
                 return requestError.notFoundError(res, "Recado")
             }
 
+            if (nome) {
+                recado.nome === nome
+            }
+
             if (descricao) {
                 recado.descricao = descricao
             }
@@ -90,9 +161,14 @@ export class recadosController {
                 recado.conteudo = conteudo
             }
 
+            if (arquivada) {
+                recado.arquivada = arquivada
+            }
+
             return res.status(200).send({
                 ok: true,
-                message: "Recado successfully updated"
+                message: "Recado successfully updated",
+                data: recado.toJson()
             })
         } catch (error: any) {
             return serverError.genericError(res, error)
